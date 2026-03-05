@@ -1,0 +1,1 @@
+-- Smart Event & Ticket Management System Database Schema
