@@ -1,19 +1,31 @@
-import sqlite3
+import os
+import pyodbc
+from dotenv import load_dotenv
 
-def initialize_database():
-    conn = sqlite3.connect('database.db')
-    cursor = conn.cursor()
+load_dotenv()
 
-    with open('database.sql', 'r', encoding='utf-8') as f:
-        sql_script = f.read()
+def init_database():
+    print("Connecting to MSSQL...")
+    
+    conn_str = os.getenv('DB_CONNECTION_STRING')
     
     try:
-        cursor.executescript(sql_script)
-        print("Database initialized successfully!")
-    except Exception as e:
-        print(f"Error: {e}")
-    finally:
-        conn.close()
+        conn = pyodbc.connect(conn_str)
+        cursor = conn.cursor()
+        print("Connected successfully!")
 
-if __name__ == "__main__":
-    initialize_database()
+        with open('database.sql', 'r', encoding='utf-8') as f:
+            sql_script = f.read()
+            
+        for statement in sql_script.split(';'):
+            if statement.strip():
+                cursor.execute(statement)
+        
+        conn.commit()
+        print("All tables created successfully in MSSQL!")
+        
+    except Exception as e:
+        print(f"FAILED! Error details: {e}")
+    finally:
+        if 'conn' in locals():
+            conn.close()

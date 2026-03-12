@@ -1,18 +1,23 @@
 import os
+import uuid
 from dotenv import load_dotenv
 import pyodbc
 
-load_dotenv()
+load_dotenv() 
 
-def get_connection():
-    return pyodbc.connect(
+def get_db_connection():
+    server = os.getenv('DB_SERVER')
+    database = os.getenv('DB_NAME')
+    conn_str = (
         f"Driver={{SQL Server}};"
-        f"Server={os.getenv('DB_SERVER')};"
-        f"Database={os.getenv('DB_NAME')};"
+        f"Server={server};"
+        f"Database={database};"
         "Trusted_Connection=yes;"
     )
-    
-    conn = pyodbc.connect(conn_str)
+    return pyodbc.connect(conn_str)
+
+def buy_ticket(user_id, event_id):
+    conn = get_db_connection()
     cursor = conn.cursor()
 
     try:
@@ -30,7 +35,7 @@ def get_connection():
             cursor.execute("INSERT INTO Tickets (user_id, event_id, ticket_code) VALUES (?, ?, ?)", 
                            (user_id, event_id, ticket_code))
             conn.commit()
-            return f"SUCCESS! Code: {ticket_code}"
+            return f"SUCCESS! Ticket Code: {ticket_code}"
         else:
             return "FAILED: Capacity full!"
     finally:
