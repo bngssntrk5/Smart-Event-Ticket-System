@@ -3,7 +3,7 @@ import uuid
 import pyodbc
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 def get_db_connection():
     """Establishes connection to the SQL Server database."""
@@ -20,16 +20,14 @@ def get_db_connection():
     return pyodbc.connect(conn_str)
 
 def buy_ticket(user_id, event_id):
-    """Checks capacity and processes a new ticket purchase."""
+    """Checks capacity and processes a new ticket purchase for the web app."""
     conn = get_db_connection()
     cursor = conn.cursor()
-
     try:
         cursor.execute("SELECT capacity FROM Events WHERE event_id = ?", (event_id,))
         event = cursor.fetchone()
-        
-        if not event: 
-            return "Error: Event not found!"
+        if not event:
+            return {"status": "error", "message": "Event not found!"}
         
         max_capacity = event[0]
         
@@ -38,28 +36,26 @@ def buy_ticket(user_id, event_id):
 
         if current_sales < max_capacity:
             ticket_code = str(uuid.uuid4())[:8].upper()
-            
             cursor.execute(
                 "INSERT INTO Tickets (user_id, event_id, ticket_code) VALUES (?, ?, ?)", 
                 (user_id, event_id, ticket_code)
             )
             conn.commit()
-            return f"SUCCESS! Ticket Code: {ticket_code}"
+            return {"status": "success", "message": f"Ticket purchased! Code: {ticket_code}", "code": ticket_code}
         else:
-            return "FAILED: Event is at full capacity!"
-    
+            return {"status": "failed", "message": "Event is full!"}
     except Exception as e:
-        return f"Database Error: {e}"
+        return {"status": "error", "message": str(e)}
     finally:
         conn.close()
 
 def list_all_tickets():
-    """Displays all purchased tickets with User and Event details."""
+    """Returns a list of all tickets for internal logs or web view."""
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         query = """
-            SELECT T.ticket_id, U.user_name, E.event_name, T.ticket_code 
+            SELECT T.ticket_id, U.username, E.event_name, T.ticket_code 
             FROM Tickets T
             JOIN Users U ON T.user_id = U.user_id
             JOIN Events E ON T.event_id = E.event_id
@@ -67,26 +63,25 @@ def list_all_tickets():
         cursor.execute(query)
         rows = cursor.fetchall()
         
-        print("\n" + "="*40)
-        print("SYSTEM TICKET LOGS")
-        print("="*40)
+        tickets = []
         for row in rows:
-            print(f"ID: {row[0]} | User: {row[1]} | Event: {row[2]} | Code: {row[3]}")
-        print("="*40 + "\n")
+            tickets.append({
+                "id": row[0],
+                "user": row[1],
+                "event": row[2],
+                "code": row[3]
+            })
+        return tickets
     finally:
         conn.close()
 
 def get_event_occupancy_report():
-    """Analyzes and reports the occupancy rate for each event."""
+    """Returns detailed occupancy data as a list of dictionaries for data analysis reports."""
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         query = """
-            SELECT 
-                E.event_name, 
-                E.capacity, 
-                COUNT(T.ticket_id) as sold_tickets,
-                (E.capacity - COUNT(T.ticket_id)) as remaining_slots
+            SELECT E.event_name, E.capacity, COUNT(T.ticket_id) 
             FROM Events E
             LEFT JOIN Tickets T ON E.event_id = T.event_id
             GROUP BY E.event_name, E.capacity
@@ -94,23 +89,17 @@ def get_event_occupancy_report():
         cursor.execute(query)
         rows = cursor.fetchall()
         
-        print("\n" + "-"*40)
-        print("EVENT OCCUPANCY ANALYSIS")
-        print("-"*40)
+        report_data = []
         for row in rows:
-            occupancy_rate = (row[2] / row[1]) * 100 if row[1] > 0 else 0
-            print(f"Event: {row[0]}")
-            print(f"Cap: {row[1]} | Sold: {row[2]} | Remaining: {row[3]}")
-            print(f"Occupancy: {occupancy_rate:.2f}%")
-            print("-" * 40)
+            sold = row[2]
+            cap = row[1]
+            rate = (sold / cap) * 100 if cap > 0 else 0
+            report_data.append({
+                "event": row[0],
+                "capacity": cap,
+                "sold": sold,
+                "rate": round(rate, 2)
+            })
+        return report_data
     finally:
         conn.close()
-
-if __name__ == "__main__":
-    print("Initiating test transaction...")
-    status = buy_ticket(1, 1)
-    print(status)
-    
-    list_all_tickets()
-    
-    get_event_occupancy_report()
