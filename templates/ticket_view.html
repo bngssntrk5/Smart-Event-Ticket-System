@@ -56,6 +56,14 @@
         color: #c0392b;
         font-weight: bold;
       }
+      .buy-ticket-btn {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
@@ -71,6 +79,7 @@
             <th>Tickets Sold</th>
             <th>Occupancy Rate</th>
             <th>Status</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -89,6 +98,11 @@
               <span class="status-low">AVAILABLE</span>
               {% endif %}
             </td>
+            <td>
+              <button class="buy-ticket-btn" data-type="{{ item.event }}">
+                Buy Ticket
+              </button>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
@@ -100,5 +114,7 @@
         >
       </div>
     </div>
+
+    <script src="{{ url_for('static', filename='js/tickets.js') }}"></script>
   </body>
 </html>

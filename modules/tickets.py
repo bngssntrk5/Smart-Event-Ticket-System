@@ -20,7 +20,7 @@ def get_db_connection():
     return pyodbc.connect(conn_str)
 
 def buy_ticket(user_id, event_id):
-    """Checks capacity and processes a new ticket purchase for the web app."""
+    """Checks capacity and processes a new ticket purchase."""
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
@@ -30,7 +30,6 @@ def buy_ticket(user_id, event_id):
             return {"status": "error", "message": "Event not found!"}
         
         max_capacity = event[0]
-        
         cursor.execute("SELECT COUNT(*) FROM Tickets WHERE event_id = ?", (event_id,))
         current_sales = cursor.fetchone()[0]
 
@@ -49,34 +48,8 @@ def buy_ticket(user_id, event_id):
     finally:
         conn.close()
 
-def list_all_tickets():
-    """Returns a list of all tickets for internal logs or web view."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    try:
-        query = """
-            SELECT T.ticket_id, U.username, E.event_name, T.ticket_code 
-            FROM Tickets T
-            JOIN Users U ON T.user_id = U.user_id
-            JOIN Events E ON T.event_id = E.event_id
-        """
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        
-        tickets = []
-        for row in rows:
-            tickets.append({
-                "id": row[0],
-                "user": row[1],
-                "event": row[2],
-                "code": row[3]
-            })
-        return tickets
-    finally:
-        conn.close()
-
 def get_event_occupancy_report():
-    """Returns detailed occupancy data as a list of dictionaries for data analysis reports."""
+    """Returns detailed occupancy data for data analysis reports."""
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
