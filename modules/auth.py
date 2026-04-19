@@ -43,15 +43,21 @@ def login_user(email, provided_password):
     cursor = conn.cursor()
     
     try:
-        # Kullanıcıyı email ile sorgula (Query user by email)
-        cursor.execute("SELECT password_hash FROM Users WHERE email = ?", (email,))
+        # Session yönetimi için kullanıcı id ve username bilgisi de sorguya eklendi
+        # (Updated query to return user id and username for session management)
+        cursor.execute("SELECT id, username, password_hash FROM Users WHERE email = ?", (email,))
         user = cursor.fetchone()
         
         if user:
-            stored_hash = user[0]
-            # Hash doğrulaması (Hash verification)
+            user_id, username, stored_hash = user
             if check_password_hash(stored_hash, provided_password):
-                return {"status": "success", "message": "Giriş başarılı!"}
+                # Başarılı girişte session'a atanacak kullanıcı bilgileri döndürülüyor
+                # (Returns user data to be stored in session upon successful login)
+                return {
+                    "status": "success",
+                    "message": "Giriş başarılı!",
+                    "user": {"id": user_id, "name": username}
+                }
         
         return {"status": "error", "message": "Email veya şifre hatalı!"}
     except Exception as e:

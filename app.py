@@ -1,7 +1,9 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from modules.tickets import buy_ticket, get_event_occupancy_report, list_all_tickets
+from modules.auth import register_user, login_user
 
 app = Flask(__name__)
+app.secret_key = 'bilet_sistemi_2026_xK9m'  # Session için gizli anahtar (Secret key for session management)
 
 @app.route('/')
 def index():
@@ -9,7 +11,49 @@ def index():
     Renders the main dashboard. 
     This page typically shows the list of available events.
     """
-    return render_template('dashboard.html')
+    if 'user_id' not in session:  # Giriş kontrolü (Check if user is logged in)
+        return redirect(url_for('login_page'))
+    return render_template('dashboard.html', user_name=session.get('user_name'))
+
+# --- AUTH ROUTES ---
+
+@app.route('/login', methods=['GET', 'POST'])
+def login_page():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        result = login_user(email, password)  # Auth modülü çağrılıyor (Calling auth module)
+        
+        if result['status'] == 'success':
+            session['user_id'] = result['user']['id']    # Kullanıcı session'a kaydediliyor (Saving user to session)
+            session['user_name'] = result['user']['name']
+            return redirect(url_for('index'))
+        else:
+            return render_template('login.html', error=result['message'])
+            
+    return render_template('login.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register_page():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        result = register_user(name, email, password)  # Auth modülü çağrılıyor (Calling auth module)
+        
+        if result['status'] == 'success':
+            return redirect(url_for('login_page'))  # Kayıt sonrası login'e yönlendir (Redirect to login after register)
+        else:
+            return render_template('login.html', reg_error=result['message'])
+            
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()  # Session temizleniyor (Clearing session)
+    return redirect(url_for('login_page'))
+
+# --- TICKET ROUTES ---
 
 @app.route('/report')
 def report():
