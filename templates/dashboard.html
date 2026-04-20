@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Etkinlik Yönetimi - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <style>
+        /* BENGİSU'NUN TASARIM DİLİ (Ortak Tema) */
+        body {
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 40px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h1,
+        h2 {
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        h2 {
+            margin-top: 40px;
+            border-bottom: 2px solid #f4f7f6;
+            padding-bottom: 10px;
+        }
+
+        /* FORM TASARIMI (Temaya Uyumlu Hale Getirildi) */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .btn-submit {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .btn-submit:hover {
+            background-color: #2980b9;
+        }
+
+        /* BENGİSU'NUN TABLO TASARIMI (Birebir Aynı) */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .status-active {
+            color: #27ae60;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📅 Etkinlik Yönetim Paneli</h1>
+        <p style="text-align: center; color: #7f8c8d;">Yeni etkinlik oluşturun ve mevcut etkinlikleri yönetin.</p>
+
+        <h2>Yeni Etkinlik Oluştur</h2>
+        <form action="/create" method="POST">
+            <div class="form-group">
+                <label for="title">Etkinlik Adı</label>
+                <input type="text" class="form-control" id="title" name="title" required>
+            </div>
+            <div class="form-group">
+                <label for="event_date">Tarih ve Saat</label>
+                <input type="datetime-local" class="form-control" id="event_date" name="event_date" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Açıklama</label>
+                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="total_capacity">Kapasite (Bilet Sayısı)</label>
+                <input type="number" class="form-control" id="total_capacity" name="total_capacity" min="1" required>
+            </div>
+            <button type="submit" class="btn-submit">Etkinliği Oluştur</button>
+        </form>
+
+        <h2>Aktif Etkinlikler</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Etkinlik Adı</th>
+                    <th>Açıklama</th>
+                    <th>Tarih</th>
+                    <th>Kapasite</th>
+                    <th>Durum</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td><strong>{{ event.title }}</strong></td>
+                    <td>{{ event.description }}</td>
+                    <td>{{ event.event_date }}</td>
+                    <td>{{ event.total_capacity }}</td>
+                    <td><span class="status-active">{{ event.status }}</span></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #7f8c8d;">Henüz aktif bir etkinlik bulunmuyor.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div style="margin-top: 30px; text-align: center">
+            <a href="/report" style="text-decoration: none; color: #3498db; font-weight: bold;">
+                📊 Doluluk Raporunu Gör (Bilet Paneli) →
+            </a>
+        </div>
+    </div>
+</body>
+
+</html>
