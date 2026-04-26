@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Management Dashboard | SmartEvent</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <style>
+      :root {
+        --primary: #4361ee;
+        --secondary: #3f37c9;
+        --success: #4cc9f0;
+        --danger: #f72585;
+        --bg: #f8f9fa;
+      }
+
+      body {
+        background-color: var(--bg);
+        font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+
+      .dashboard-card {
+        background: white;
+        padding: 40px;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 500px;
+        text-align: center;
+      }
+
+      .welcome-text {
+        color: #2b2d42;
+        margin-bottom: 10px;
+        font-size: 2rem;
+      }
+
+      .user-badge {
+        display: inline-block;
+        background: #e2e8f0;
+        padding: 5px 15px;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        color: var(--primary);
+        font-weight: bold;
+        margin-bottom: 30px;
+      }
+
+      .menu-grid {
+        display: grid;
+        gap: 15px;
+      }
+
+      .nav-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        padding: 18px;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        font-size: 1.1rem;
+      }
+
+      .btn-report {
+        background-color: var(--primary);
+        color: white;
+      }
+
+      .btn-report:hover {
+        background-color: var(--secondary);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+      }
+
+      .btn-create {
+        background-color: white;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+      }
+
+      .btn-create:hover {
+        background-color: #f0f3ff;
+        transform: translateY(-3px);
+      }
+
+      .btn-logout {
+        color: #8d99ae;
+        font-size: 0.9rem;
+        margin-top: 20px;
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+
+      .btn-logout:hover {
+        color: var(--danger);
+      }
+
+      .flash-msg {
+        background-color: #d1fae5;
+        color: #065f46;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        border-left: 5px solid #10b981;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-card">
+      {% with messages = get_flashed_messages() %} {% if messages %} {% for
+      message in messages %}
+      <div class="flash-msg">✅ {{ message }}</div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <h1 class="welcome-text">SmartEvent</h1>
+      <div class="user-badge">Administrator: {{ user_name }}</div>
+
+      <p style="color: #64748b; margin-bottom: 30px">
+        What would you like to do today?
+      </p>
+
+      <div class="menu-grid">
+        <a href="{{ url_for('report') }}" class="nav-button btn-report">
+          📊 Real-time Occupancy Report
+        </a>
+
+        <a href="{{ url_for('create_event') }}" class="nav-button btn-create">
+          ➕ Create New Event
+        </a>
+
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+          Sign Out Securely
+        </a>
+      </div>
+    </div>
+  </body>
+</html>
