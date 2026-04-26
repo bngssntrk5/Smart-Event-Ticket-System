@@ -18,50 +18,74 @@ Version 0.7 (09.04.2026): Development of front-end event modules by Ilgaz Alagö
 
 Version 1.0 (09.04.2026): Finalizing 4+1 Architectural Views and project documentation for Part 2 submission by Bengisu Şentürk, Omer Faruk Soylu, and Ilgaz Alagöz.
 
-## 1. Scope
+Version 1.0.1 (17.04.2026): Bengisu Şentürk started final UI enhancements and refined the core ticketing modules for the final phase.
 
-This document defines the software architecture of the Smart Event Ticket System. It covers the modular structure, database relationships, and user process flows using the 4+1 View Model.
+Version 1.0.5 (20.04.2026): Ömer Faruk Soylu and Ilgaz Alagöz completed their final pushes, finalizing the Authentication and Event Management logic for integration.
 
-## 3. Software Architecture
+Version 1.1 (26.04.2026): Final Submission. Final integration, premium CSS implementation, and Fetch API real-time occupancy updates completed by Bengisu Şentürk. Project ready for Part 3 delivery.
 
-The system is built using the Python/Flask micro-framework with a Modular Monolith architecture. It utilizes a relational data model with SQL Server to ensure data integrity and ACID compliance.
+# 1. Scope
 
-## 5. Logical Architecture
+This document defines the final software architecture for the Smart Event Ticket System. It focuses on the transition from a static application to a dynamic, real-time management tool with a focus on data integrity and user experience (UX).
 
-The system consists of three primary logical components:
+# 3. Software Architecture
 
-- **Auth Component:** Handles user registration, login, and session management.
-- **Event Component:** Manages event creation, scheduling, and capacity constraints.
-- **Ticket Component:** Manages the core ticketing logic, unique ticket code generation, and SQL-based occupancy reporting.
+The system follows a Modular Monolith architecture. While the core is built on the Flask micro-framework, the final version utilizes a decoupled communication pattern where the frontend interacts with the backend via JSON-based API calls for the ticketing process.
 
-## 6. Process Architecture
+# 5. Logical Architecture
 
-When a user attempts to purchase a ticket, the following process occurs:
+The project is divided into three functional modules with shared responsibilities:
 
-1. User selects an event from the dashboard.
-2. The system invokes `modules/tickets.py` to check real-time capacity via SQL.
-3. If capacity is available, a transaction is initiated, an `INSERT` operation is performed, and a unique ticket code is generated.
+Auth Module (auth.py): Handles secure user onboarding, authentication, and session persistence using flask.session.
 
-## 7. Development Architecture
+Event Module (events.py): Manages the lifecycle of events, including administrative creation and SQL-backed capacity settings.
 
-The project follows a layered folder structure for maintainability:
+Ticket & Analysis Module (tickets.py): The core logic engine that calculates real-time occupancy using SQL JOIN and COUNT functions and manages ticket transactions.
 
-- `/modules`: Contains back-end business logic (Ticket, Event, Auth modules).
-- `/templates`: Front-end presentation layer using Jinja2 templates.
-- `/static`: Assets for styling (CSS) and client-side logic (JS).
-- `app.py`: The main entry point of the Flask application.
+# 6. Process Architecture (Final Build)
 
-## 8. Physical Architecture
+We implemented a Non-Blocking Purchase Workflow:
 
-- **Web Server:** Localhost (Flask built-in development server).
-- **Database Server:** SQL Server / SQLite.
-- **Environment:** Python 3.x runtime environment.
+User Action: The user clicks the "Buy Ticket" button on the dashboard.
 
-## 9. Scenarios
+Asynchronous Request: A JavaScript Fetch API call is sent to the backend without reloading the page.
 
-- **Scenario 1 (Ticket Purchase):** A user logs in, selects an event, and completes a purchase. The system updates the remaining capacity instantly.
-- **Scenario 2 (Reporting):** An administrator monitors occupancy rates (%) via the `ticket_view.html` dashboard, fueled by real-time SQL queries.
+Backend Processing: The server validates the request and performs a SQL transaction (ACID compliant).
 
-## 10. Size and Performance
+JSON Feedback: The server returns a success/failure JSON response.
 
-The system is optimized for concurrent ticketing operations, ensuring that the database remains consistent even under high traffic through relational constraints and efficient SQL queries.
+Dynamic UI Update: The DOM is updated instantly to reflect the new Occupancy Percentage and Progress Bar width.
+
+# 7. Development Architecture
+
+The folder structure is optimized for the final build:
+
+/modules: Encapsulated backend logic files.
+
+/templates: Dynamic HTML templates using the Jinja2 engine.
+
+/static:
+
+/css: Custom premium styling for modern look & feel.
+
+/js: Client-side logic for real-time occupancy updates.
+
+app.py: Central routing and environment configuration.
+
+# 8. Physical Architecture
+
+Environment: Python 3.x with Flask Web Server.
+
+Database: MS SQL Server (accessed via pyodbc).
+
+Security: Sensitive credentials managed via a .env file (Environment Variables).
+
+# 9. Scenarios
+
+Scenario 1 (Real-time Purchase): A user buys a ticket; the occupancy bar increases instantly for all users viewing that event without a manual refresh.
+
+Scenario 2 (Safety Constraint): If an event reaches 100% capacity, the system triggers an automatic UI update to disable the "Buy" button and change the status to "Sold Out".
+
+# 10. Performance and Scalability
+
+By offloading UI calculations to the client-side and using optimized SQL queries, the system ensures low latency even as the number of events grows. The modular design allows for future features (like payment integration) to be added without disrupting existing services.
